@@ -9,6 +9,22 @@ return {
         markdown = { 'markdownlint' },
       }
 
+      -- markdownlint's defaults (80-column lines, no hard tabs even in code
+      -- blocks) flood every .md with warnings. Use our relaxed config unless
+      -- the project has its own .markdownlint.* in the working directory.
+      lint.linters.markdownlint.args = {
+        '--config',
+        function()
+          for _, name in ipairs { '.markdownlint.jsonc', '.markdownlint.json', '.markdownlint.yaml', '.markdownlint.yml' } do
+            if vim.uv.fs_stat(name) then
+              return name
+            end
+          end
+          return vim.fn.stdpath 'config' .. '/markdownlint.jsonc'
+        end,
+        '--stdin',
+      }
+
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
       -- instead set linters_by_ft like this:
       -- lint.linters_by_ft = lint.linters_by_ft or {}
